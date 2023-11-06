@@ -1,0 +1,91 @@
+
+#define KEY_SWITCH_NAME "Internal_SwitchLanguage"                                  
+#define KEY_RESET_NAME  "Internal_ResetDopt"
+#define KEY_INSERT_NAME "Internal_InsertModeView"
+
+ struct _key_scan_name
+ {
+  struct _key_scan_name *next;
+  char *name;
+  unsigned long scan;
+ };
+
+ struct bind_element
+ {
+  bind_element *next;
+  unsigned long key;
+  unsigned long status;
+  unsigned long mode;
+  unsigned long async_status;
+  unsigned long async_id;
+  unsigned char* async_msg;
+  struct {
+   int swap;
+   int only_num;
+   struct{
+    int x,y,sz;
+   }pha;
+   struct{
+    int x,y,sz;
+   }phb;
+  }opt;
+  CModule      *module;
+  long (*func)(unsigned long);
+ };
+ class CBindKey;
+ struct req_info
+ {
+  CBindKey     *pb;
+  bind_element *bkey;
+ };
+
+
+ struct message_element
+ {
+  message_element*prev;
+  message_element*next;
+  char *msg;      // output message
+  int x,y;        // screen  default  
+  DWORD ttl;      // count keyboard input message allow default 2
+  DWORD cur_ttl;  //
+  int attr;       // attribute default 0x4E    BG=RED FG=YELLOW
+ };
+
+ class CScanName
+ {
+  struct _key_scan_name *list;
+ public:
+   CScanName():list(NULL){}
+  ~CScanName(){if(list) removeall();}
+   unsigned long Find(const char*name);
+   unsigned long Insert(const char*name,unsigned long scan);
+   void removeall(void);
+ };
+
+ class CBindKey
+ {
+  CRITICAL_SECTION acl;
+  message_element *queue;
+  bind_element    *head;
+  unsigned long    insert_to_queue(message_element *pmsg);
+  message_element *remove_from_queue(message_element*);
+  long       find_message_in_queue(message_element *m);
+  void       update_message(message_element*,int s);
+  long       async_start(req_info *);
+ public:
+  CBindKey();
+ ~CBindKey();
+  unsigned long Find(unsigned long scan);
+  unsigned long Find(char*fname);
+  unsigned long Call(unsigned long id);
+  unsigned long QueueIsEmpty(void);
+  unsigned long QueueQuantum(void);
+  unsigned long QueueFlush(void);
+  unsigned long QueueMessageRemove(message_element*);
+  unsigned long QueueMessageInsert(message_element*msg);
+  unsigned long AttachKey(HWND,unsigned long ,const char*fname);
+  unsigned long SetOptions(unsigned long scan,char*option);
+ };
+
+
+

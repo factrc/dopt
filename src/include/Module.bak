@@ -1,0 +1,52 @@
+
+ class CValue
+ {
+ public:
+  CValue(const char*name);
+ ~CValue();
+  CValue& operator=(char*);             // for string
+  CValue& operator=(void*);             // for hex
+  CValue& operator=(int);               // for int
+  CValue& operator=(unsigned int);      // for int 
+  CValue& operator=(long);              // for int 
+  CValue& operator=(unsigned long);     // for int 
+  long from(char*str);
+  long get(int*);
+  long get(void**);
+  long get(char*);
+  long size(void);                      // return length
+  operator char*() const{return value;}
+ private:
+  enum{V_INT = 0x10,V_PTR = 0x11,V_STR = 0x12};
+  char *get_the_is_type(long type); 
+  char *value;
+  char *vname;
+ };
+
+ class CModule
+ {
+ public:
+  CModule(const char*name);
+ ~CModule();
+  long isload(void){ return f_load;}
+  char *errorstr(void){ return _error_string;}
+  char* name(void){ return filename; }
+ public:     // function overload from module
+  long d_init(const char*);
+  long d_done(void);
+  long d_process(void**res,const char*param);
+  long d_getstate(long);
+  long d_setstate(long,void*,long);
+ private:
+  long (*p_init)(const char*);
+  long (*p_done)(void);
+  long (*p_process)(void**res,const char*param);
+  long (*p_getstate)(long);
+  long (*p_setstate)(long,void*,long);
+ private:
+  HMODULE module;
+  long f_load;
+  char _error_string[1024];
+  char filename[512];
+ };
+
